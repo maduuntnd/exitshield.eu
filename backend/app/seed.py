@@ -92,20 +92,18 @@ async def seed():
         org_id = org["id"]
     await db.users.update_one({"user_id": user_id}, {"$set": {"org_id": org_id}})
 
-    # Seed a demo trial subscription (Growth, ~9 days left) if none exists.
-    fresh_org = await db.organizations.find_one({"id": org_id}, {"_id": 0})
-    if not fresh_org.get("subscription"):
-        now = datetime.now(timezone.utc)
-        await db.organizations.update_one({"id": org_id}, {"$set": {"subscription": {
-            "plan_id": "growth",
-            "status": "trialing",
-            "trial_ends_at": (now + timedelta(days=9)).isoformat(),
-            "current_period_end": None,
-            "grace_until": None,
-            "payment_method_on_file": False,
-            "cancel_at_period_end": False,
-            "started_at": now.isoformat(),
-        }}})
+    # Always keep the demo org on a fresh 14-day trial for consistent demos.
+    now = datetime.now(timezone.utc)
+    await db.organizations.update_one({"id": org_id}, {"$set": {"subscription": {
+        "plan_id": "growth",
+        "status": "trialing",
+        "trial_ends_at": (now + timedelta(days=9)).isoformat(),
+        "current_period_end": None,
+        "grace_until": None,
+        "payment_method_on_file": False,
+        "cancel_at_period_end": False,
+        "started_at": now.isoformat(),
+    }}})
 
     # 3) Cancellation flow
     if await db.cancellation_flows.find_one({"org_id": org_id}) is None:

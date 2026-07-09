@@ -51,3 +51,17 @@ organizations, customers, cancellation_flows, retention_offers, cancel_sessions,
 - Frontend: public `/pricing`, dashboard `/dashboard/billing` (current plan, trial countdown, usage bars, plan upgrade/downgrade, cancel), dashboard-wide BillingBanner.
 - SIMULATED: recurring auto-charge & renewals + saved cards (sk_test_emergent proxy can't do subscription mode). Swap a real Stripe key + subscription-mode prices to go fully live.
 - Tests: 28/28 backend (test_churnguard.py + test_billing.py), frontend 100%.
+
+## Stripe Connect + Integration (added 2026-07-09)
+- Fixed offer active/inactive toggle (misaligned knob → clean Tailwind switch, persists via PATCH).
+- New Integration/Settings page (`/dashboard/settings`): "Connect your Stripe" (Stripe Connect), copy-paste cancel-button snippet, redirect URL, API key, and a "Preview save flow" link.
+- Backend `settings_routes.py`: GET /api/settings/integration, POST /api/settings/stripe/connect, /disconnect. Stores `stripe_connect.account_id` per org.
+- `stripe_service.py` now passes `stripe_account=<connected acct>` on every subscription mutation; `session_routes.apply_offer` reads the org's connected account.
+- SIMULATED: Stripe Connect OAuth is a labeled test connection (proxy key can't do real Connect). Real Connect activates with a live Stripe platform key + STRIPE_CONNECT_CLIENT_ID.
+- Demo org resets to a fresh 14-day Growth trial on each boot for consistent demos.
+- Tests: 34/34 backend (+ test_settings.py), frontend 100%.
+
+## Remaining for real Stripe money movement
+1. Live Stripe platform key + Connect client id → real "Connect with Stripe" OAuth.
+2. Live subscription-mode prices for real recurring vendor billing.
+3. HMAC-signed cancel URLs so user_id/subscription_id can't be forged.
