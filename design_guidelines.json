@@ -1,0 +1,128 @@
+{
+  "project_name": "ChurnGuard",
+  "theme_strategy": "Hybrid theme architecture: Dark mode forced for Vendor Dashboard, Light mode forced for Public Cancellation Portal. Marketing page utilizes both to transition the narrative.",
+  "typography": {
+    "vendor_dashboard": {
+      "heading_font": "Outfit",
+      "body_font": "IBM Plex Sans",
+      "scale_rules": "H1 max text-5xl, tracking-tight. Overlines/Labels text-xs uppercase tracking-[0.2em].",
+      "rationale": "High-density data requires sterile, clear monoline-like proportions for numbers."
+    },
+    "cancellation_portal": {
+      "heading_font": "Manrope",
+      "body_font": "Figtree",
+      "scale_rules": "H2 text-3xl for survey questions. Leading-relaxed for body text to lower cognitive load.",
+      "rationale": "Friendly, rounded humanist fonts reduce user anxiety and friction during the cancellation process."
+    },
+    "marketing": {
+      "heading_font": "Cabinet Grotesk",
+      "body_font": "IBM Plex Sans",
+      "scale_rules": "Radical weight contrast (e.g., font-black for value prop, font-light for subtext). H1 max text-6xl.",
+      "rationale": "Assertive and brutalist-leaning for high-ticket B2B credibility."
+    }
+  },
+  "colors": {
+    "vendor_dashboard": {
+      "background": "#0B0F19",
+      "surface": "#121826",
+      "primary": "#10B981",
+      "primary_hover": "#059669",
+      "text_main": "#F8FAFC",
+      "text_muted": "#94A3B8",
+      "border": "rgba(255, 255, 255, 0.1)",
+      "chart_emerald": "#10B981",
+      "chart_destructive": "#EF4444",
+      "archetype": "The Performance Pro (Command Center precision)"
+    },
+    "cancellation_portal": {
+      "background": "#F9FAFB",
+      "surface": "#FFFFFF",
+      "primary": "#111827",
+      "text_main": "#111827",
+      "text_muted": "#6B7280",
+      "border": "rgba(0, 0, 0, 0.08)",
+      "accent_offer": "#4F46E5",
+      "archetype": "Swiss & High-Contrast (Authority, Clarity) mixed with Soft Utility"
+    }
+  },
+  "visual enhancers": {
+    "vendor_dashboard": [
+      "The Tracing Beam: Use framer-motion to create glowing 1px border trails on high-value KPI cards (MRR Recovered).",
+      "Grid Borders: Expose the skeleton. border-collapse style layout for data tables.",
+      "Glow: Add blur-md emerald glows under positive trend charts."
+    ],
+    "cancellation_portal": [
+      "Neumorphism (Tactile): Soft ambient shadows shadow-[0_8px_30px_rgb(0,0,0,0.04)] paired with a sharp 1px border-black/5 to ground the wizard container.",
+      "Minimalist Progress: Stepper should be hyper-minimal, just 2-3 thin lines, no massive circles."
+    ]
+  },
+  "component name": {
+    "dashboard_kpi_card": "Cardless rectangular, 1px solid border-white/10, no shadow, emerald hover lift (-translate-y-1).",
+    "cancellation_wizard": "Asymmetrical split screen: Left side clean form/survey, right side minimal calming nature visual or dynamic offer breakdown.",
+    "offer_manager_crud": "Dense data table, 1px subtle borders, inline toggles for active/inactive offers.",
+    "charts": "Shadcn Recharts. Area charts with emerald gradient fill (opacity 0.2 to 0) for MRR Recovered."
+  },
+  "grids": {
+    "dashboard": "Bento Grid Protocol Mode B (High Density Grid). Base grid-cols-1 md:grid-cols-3 lg:grid-cols-4. Tight gaps (gap-4 or gap-6).",
+    "marketing": "Tetris Grid Protocol Mode A. Base grid-cols-1 md:grid-cols-8 lg:grid-cols-12. Wide gaps (gap-12). Aggressive asymmetry."
+  },
+  "layouts": {
+    "cancellation_flow": "Split-screen layout. 60% left for form interaction, 40% right for value reinforcement or calming visual. Avoid centered 'Bootstrap' boxes.",
+    "dashboard_view": "Fixed sidebar navigation (glassmorphism if scrolling under), dense top bar with global search, main content area with strict grid hierarchy. Spacing: p-6 or p-8 internal padding for widgets."
+  },
+  "motion": {
+    "wizard_transitions": "Framer Motion layout animations. Slide-up and fade-in (y: 20, opacity: 0 to 1, duration 0.4s easeOut) between step 1 (Reason), step 2 (Offer), and step 3 (Success/Goodbye).",
+    "dashboard_microinteractions": "Row hover states in Analytics table. Subtle number counter animations for KPI blocks on load.",
+    "marketing_scroll": "Lenis smooth scrolling. React Spring Parallax for floating dashboard UI elements over the hero background."
+  },
+  "accessibility": {
+    "contrast": "APCA and WCAG AA standards. Ensure all text in the Cancellation Flow exceeds 4.5:1. Never use transparent dropdown backgrounds.",
+    "focus": "All interactive elements must have focus:ring-2 focus:ring-emerald-500 (dashboard) or focus:ring-primary (portal).",
+    "motion": "Respect prefers-reduced-motion media query for all Framer Motion and Lenis scroll effects.",
+    "testing": "All key elements MUST include data-testid (e.g., data-testid='cancel-reason-radio', data-testid='kpi-mrr-recovered')."
+  },
+  "media": {
+    "images": "Hero overlay max bg-black/50 or bg-black/30 for dark themes. Images must not exceed 80vh on mobile.",
+    "icons": "Phosphor Icons for Dashboard (dense, precise). Heroicons for Cancellation portal (clean, soft)."
+  },
+  "3d libraries": {
+    "recommendation": "Use Recharts for Dashboard analytics (2D clarity is paramount). Use framer-motion for Wizard. No heavy 3D required, keep it performant. If marketing needs punch, use Spline for a lightweight abstract data visualization in the hero."
+  },
+  "image urls": [
+    {
+      "category": "marketing_hero_background",
+      "url": "https://images.unsplash.com/photo-1768522036770-c615007cf0fd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGRhdGElMjB2aXN1YWxpemF0aW9uJTIwZW1lcmFsZCUyMGRhcmt8ZW58MHx8fHwxNzgzNTU2MTAwfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Textured green abstract lines representing data and growth, use for marketing hero section."
+    },
+    {
+      "category": "marketing_social_proof",
+      "url": "https://images.unsplash.com/photo-1748609622257-bb917eda4d14?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxidXNpbmVzcyUyMHBlb3BsZSUyMGFuYWx5emluZyUyMGRhc2hib2FyZHxlbnwwfHx8fDE3ODM1NTYxMDF8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Business people analyzing dashboard. Use in the marketing 'Why ChurnGuard' section."
+    },
+    {
+      "category": "cancellation_wizard_side_image",
+      "url": "https://images.unsplash.com/photo-1519120944692-1a8d8cfc107f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxjYWxtJTIwbWluaW1hbCUyMG5hdHVyZSUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3ODM1NTYxMDB8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Calm foggy landscape. Use on the right side of the split-screen cancellation wizard to evoke calm and reduce churn anxiety."
+    }
+  ],
+  "instructions_to_main_agent": [
+    "Strictly follow the dual-theme architecture. Vendor Dashboard must be built in a forced dark mode (#0B0F19 background with #10B981 accents). Public cancellation portal must be forced light mode (#F9FAFB background).",
+    "All React code MUST be written in JavaScript (.jsx/.js). Do not generate TypeScript (.tsx) files or TypeScript-specific Shadcn components.",
+    "Implement Shadcn Recharts for the 'Top Cancellation Reasons' and 'MRR Recovered' charts.",
+    "Do NOT build the cancellation step wizard with complex routing. Use a single page component with framer-motion conditional rendering for steps.",
+    "In the Dashboard, use purely border-based card designs (border-white/10). No soft box-shadows.",
+    "Ensure 'data-testid' attributes are attached to all actionable buttons and form inputs.",
+    "Do not center-align the main form in the cancellation flow. Use the requested split layout with the nature image on the right."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do not converge toward generic outputs. Use the typography constraints properly (Outfit/Cabinet Grotesk for headings).",
+    "Never use dark colors as gradients.",
+    "Create depth through layered design elements with z-index hierarchy and crisp 1px borders.",
+    "Do not apply `transition: all`. Target specific properties like `transition-colors` or `transition-transform`.",
+    "Do not center align the app container. No `.App { text-align: center; }`.",
+    "All interactions need micro-animations (hover states, focus rings).",
+    "Use generous spacing (p-6, p-8) to avoid cramped UI.",
+    "Never use placeholder URLs. Use the provided image URLs.",
+    "Use `sonner` for all toast notifications, implemented via .js/.jsx."
+  ]
+}
