@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import Offers from "@/pages/Offers";
 import Analytics from "@/pages/Analytics";
 import Billing from "@/pages/Billing";
+import Settings from "@/pages/Settings";
 import Pricing from "@/pages/Pricing";
 import CancelFlow from "@/pages/CancelFlow";
 
@@ -69,6 +70,14 @@ function AppRouter() {
         element={
           <ProtectedRoute>
             <Billing />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />

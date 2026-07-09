@@ -115,6 +115,8 @@ async def apply_offer(body: ApplyOfferRequest):
     customer = await db.customers.find_one({"id": session["customer_id"]}, {"_id": 0})
     sub_id = customer.get("stripe_subscription_id") if customer else None
     org = await db.organizations.find_one({"id": session["org_id"]}, {"_id": 0})
+    connect = (org.get("stripe_connect") or {}) if org else {}
+    acct = connect.get("account_id") if connect.get("connected") else None
 
     result = {}
     final_outcome = None
@@ -126,7 +128,7 @@ async def apply_offer(body: ApplyOfferRequest):
         if not offer:
             raise HTTPException(status_code=400, detail="Offer not found")
         coupon_id = offer.get("stripe_coupon_id") or "sim_coupon"
-        result = apply_discount(sub_id, coupon_id)
+        result = apply_discount(sub_id, coupon_id, acct)
         final_outcome = "retained_discount"
         await db.retention_offers.update_one({"id": offer["id"]}, {"$inc": {"claim_count": 1}})
 
@@ -134,14 +136,14 @@ async def apply_offer(body: ApplyOfferRequest):
         offer = await db.retention_offers.find_one(
             {"id": body.offer_id or session.get("offer_id")}, {"_id": 0})
         days = (offer.get("pause_days") if offer else None) or 30
-        result = pause_subscription(sub_id, days)
+        result = pause_subscription(sub_id, days, acct)
         final_outcome = "retained_pause"
         new_status = "paused"
         if offer:
             await db.retention_offers.update_one({"id": offer["id"]}, {"$inc": {"claim_count": 1}})
 
     elif body.action == "cancel":
-        result = cancel_at_period_end(sub_id)
+        result = cancel_at_period_end(sub_id, acct)
         final_outcome = "canceled"
         new_status = "canceled"
 

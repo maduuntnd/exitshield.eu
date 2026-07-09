@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 3: Verified toggle bug fix + Stripe Connect (simulated) + Integration/Settings page. Backend: 33/34 pytest passing (added 6 new /app/backend/tests/test_settings.py cases for GET /api/settings/integration, POST /stripe/connect (mode:simulated, acct_test_ id), POST /stripe/disconnect, and apply-offer messaging with/without connected account). Frontend Playwright: nav-settings routes to /dashboard/settings; disconnected state shows connect-stripe-button + integration snippet card (copy-url-button, copy-snippet-button, copy-key-button, settings-test-flow-link); clicking connect-stripe-button flips UI to connect-status-connected with an acct_test_... code and disconnect-stripe-button. Toggle BUG FIX verified: all 4 seeded offer toggles render aligned (active=emerald track+translate-x-6 knob, inactive=gray track+translate-x-1 knob); toggling first offer OFF flipped it visually AND persisted through page reload (verified via PATCH /api/offers/{id}). Only regression failure is TestSubscription.test_get_subscription_trialing_growth (seed trial now expired -> status='active') — pre-existing seed data staleness, unrelated to this iteration.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/billing/subscription", "issue": "Demo org trial has now elapsed (14d from seed), auto-transitioning to 'active'; test_get_subscription_trialing_growth in test_billing.py asserts 'trialing' and fails. Either re-seed with fresh trial_ends_at on each start, or update the test."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_settings.py",
+    "/app/backend/tests/test_churnguard.py",
+    "/app/backend/tests/test_billing.py",
+    "/app/test_reports/pytest/iteration3.xml"
+  ],
+  "action_items": [
+    "Refresh demo org trial_ends_at on seed_admin startup (or make the trialing test tolerate 'active' after natural expiry) — only remaining failing test.",
+    "Consider re-seeding retention_offers active=True on each boot; two seeded offers had been left inactive from prior manual toggling and were restored by this run (needed for regression pause-flow test)."
+  ],
+  "critical_code_review_comments": [
+    "settings_routes.stripe_connect: correctly gates real OAuth on live platform key; simulated fallback stores acct_test_<hex> with connected/simulated flags — good.",
+    "stripe_service.apply_discount/pause/cancel: `stripe_account` param plumbed through; simulated message includes 'via connected account <acct>' or 'no Stripe account connected' — matches spec exactly.",
+    "session_routes.apply_offer reads org.stripe_connect.account_id only when connected=True — safe.",
+    "Offers.jsx toggle: pure Tailwind switch with h-6/w-11 track + translate-x-1/-6 knob and emerald/white-20 track — fixes the previous misalignment; optimistic local state update is used but PATCH persistence verified via reload.",
+    "Settings.jsx uses navigator.clipboard which requires https/secure context — OK on preview URL; also fine visual + a11y for copy states.",
+    "Minor: Settings.jsx has no error state for /settings/integration GET failure (silent .catch), consider surfacing a toast; low priority."
+  ],
+  "updated_files": ["/app/backend/tests/test_settings.py"],
+  "success_rate": {"backend": "97% (33/34, 1 stale seed data test)", "frontend": "100%"},
+  "test_credentials": "demo@churnguard.io / ChurnGuard2026! ; api_key cg_live_demo_9f3a7c21b8e4",
+  "seed_data_creation": "Restored two seeded offers to active=True (pause 'Not using it enough', discount 'Switching to a competitor') that were left inactive from a prior manual run — needed by regression tests.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Run backend with: pytest /app/backend/tests/ -v. Settings tests can race with xdist because they mutate shared org.stripe_connect state — currently mitigated by module-scoped autouse fixture that disconnects at start/end. Demo org left disconnected after this run. If pause-flow regression fails, PATCH the two seeded offers back to active=True. The trialing_growth test is expected to fail until seed is refreshed.",
+  "rca of the issue": "trialing_growth failure RCA: seed_admin sets trial_ends_at once; after 14 real days the billing.evaluate_lifecycle transitions status trialing->active on next GET /billing/subscription. Fix: reset trial_ends_at to now+14d on seed refresh, or assert status in {'trialing','active'} in the test."
+}

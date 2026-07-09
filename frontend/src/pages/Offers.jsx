@@ -185,8 +185,8 @@ export default function Offers() {
                 <div className="col-span-2 text-sm text-slate-300">{o.claim_count}</div>
                 <div className="col-span-2">
                   <button onClick={() => toggle(o)} data-testid={`toggle-offer-${o.id}`}
-                    className={`relative h-6 w-11 rounded-full transition-colors ${o.active ? "bg-emerald-500" : "bg-white/15"}`}>
-                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${o.active ? "translate-x-5" : "translate-x-0.5"}`} />
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${o.active ? "bg-emerald-500" : "bg-white/20"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${o.active ? "translate-x-6" : "translate-x-1"}`} />
                   </button>
                 </div>
                 <div className="col-span-1 flex justify-end gap-1">

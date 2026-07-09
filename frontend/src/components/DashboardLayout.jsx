@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate, Link } from "react-router-dom";
-import { ShieldCheck, LayoutDashboard, Gift, BarChart3, LogOut, CreditCard, Clock, AlertTriangle } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Gift, BarChart3, LogOut, CreditCard, Clock, AlertTriangle, Plug } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 
@@ -8,6 +8,7 @@ const nav = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true, testid: "nav-overview" },
   { to: "/dashboard/offers", label: "Offer Manager", icon: Gift, testid: "nav-offers" },
   { to: "/dashboard/analytics", label: "Analytics", icon: BarChart3, testid: "nav-analytics" },
+  { to: "/dashboard/settings", label: "Integration", icon: Plug, testid: "nav-settings" },
   { to: "/dashboard/billing", label: "Billing", icon: CreditCard, testid: "nav-billing" },
 ];
 

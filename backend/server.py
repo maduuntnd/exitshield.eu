@@ -13,6 +13,7 @@ from app.db import create_indexes, close_client
 from app.seed import seed
 from app.routers import auth_routes, dashboard_routes, session_routes
 from app.routers import billing_routes
+from app.routers import settings_routes
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -38,6 +39,7 @@ app.include_router(auth_routes.router)
 app.include_router(dashboard_routes.router)
 app.include_router(session_routes.router)
 app.include_router(billing_routes.router)
+app.include_router(settings_routes.router)
 
 app.add_middleware(
     CORSMiddleware,

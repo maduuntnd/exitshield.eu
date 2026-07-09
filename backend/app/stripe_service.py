@@ -42,45 +42,49 @@ def create_coupon(percent_off: int, name: str) -> dict:
     return {"stripe_coupon_id": f"sim_coupon_{percent_off}off", "simulated": True}
 
 
-def apply_discount(subscription_id: str, coupon_id: str) -> dict:
-    """Attach a coupon to an active subscription."""
-    if _live_key() and subscription_id:
+def apply_discount(subscription_id: str, coupon_id: str, stripe_account: str = None) -> dict:
+    """Attach a coupon to an active subscription on the vendor's connected account."""
+    if _live_key() and subscription_id and stripe_account:
         try:
-            stripe.Subscription.modify(subscription_id, coupon=coupon_id)
+            stripe.Subscription.modify(subscription_id, coupon=coupon_id, stripe_account=stripe_account)
             return {"ok": True, "simulated": False,
-                    "message": "Coupon applied to live subscription."}
+                    "message": "Coupon applied to the live subscription."}
         except Exception as e:
             logger.warning("Stripe apply_discount failed, simulating: %s", e)
+    via = f"via connected account {stripe_account}" if stripe_account else "no Stripe account connected"
     return {"ok": True, "simulated": True,
-            "message": f"[SIMULATED] Coupon {coupon_id} applied to subscription {subscription_id or 'N/A'}."}
+            "message": f"[SIMULATED] Coupon {coupon_id} applied to subscription {subscription_id or 'N/A'} ({via})."}
 
 
-def pause_subscription(subscription_id: str, days: int) -> dict:
+def pause_subscription(subscription_id: str, days: int, stripe_account: str = None) -> dict:
     """Pause payment collection for a subscription for `days` days."""
     from datetime import datetime, timezone, timedelta
     resume_at = int((datetime.now(timezone.utc) + timedelta(days=days)).timestamp())
-    if _live_key() and subscription_id:
+    if _live_key() and subscription_id and stripe_account:
         try:
             stripe.Subscription.modify(
                 subscription_id,
                 pause_collection={"behavior": "void", "resumes_at": resume_at},
+                stripe_account=stripe_account,
             )
             return {"ok": True, "simulated": False,
                     "message": f"Subscription paused for {days} days."}
         except Exception as e:
             logger.warning("Stripe pause failed, simulating: %s", e)
+    via = f"via connected account {stripe_account}" if stripe_account else "no Stripe account connected"
     return {"ok": True, "simulated": True,
-            "message": f"[SIMULATED] Subscription {subscription_id or 'N/A'} paused for {days} days."}
+            "message": f"[SIMULATED] Subscription {subscription_id or 'N/A'} paused for {days} days ({via})."}
 
 
-def cancel_at_period_end(subscription_id: str) -> dict:
+def cancel_at_period_end(subscription_id: str, stripe_account: str = None) -> dict:
     """Schedule cancellation at the end of the current billing period."""
-    if _live_key() and subscription_id:
+    if _live_key() and subscription_id and stripe_account:
         try:
-            stripe.Subscription.modify(subscription_id, cancel_at_period_end=True)
+            stripe.Subscription.modify(subscription_id, cancel_at_period_end=True, stripe_account=stripe_account)
             return {"ok": True, "simulated": False,
                     "message": "Subscription set to cancel at period end."}
         except Exception as e:
             logger.warning("Stripe cancel failed, simulating: %s", e)
+    via = f"via connected account {stripe_account}" if stripe_account else "no Stripe account connected"
     return {"ok": True, "simulated": True,
-            "message": f"[SIMULATED] Subscription {subscription_id or 'N/A'} will cancel at period end."}
+            "message": f"[SIMULATED] Subscription {subscription_id or 'N/A'} will cancel at period end ({via})."}
