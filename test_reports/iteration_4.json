@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 4: Migrated backend regression tests to LIVE Stripe behavior and verified all specified flows. Backend pytest: 32 passed, 1 skipped (moved test). Updated /app/backend/tests/test_billing.py (real cs_live_ checkout assertions, demo-org change-plan/cancel 400 assertions, offer-limit test moved to co-located module) and /app/backend/tests/test_settings.py (Connect returns {mode:'oauth', url:connect.stripe.com...client_id=ca_Ur9Mzk7...}, live_platform true, connect does NOT flip connected). Added /app/backend/tests/conftest.py to load REACT_APP_BACKEND_URL from /app/frontend/.env. Fixed one stale assertion in test_churnguard.py (stripe_coupon_id is now null at offer create time per new spec). Frontend Playwright verified: login->dashboard KPIs render; /dashboard/billing shows current-plan-card + usage-sessions + usage-offers + select-plan-{starter,growth,scale}; clicking select-plan-growth fires POST /api/billing/checkout returning HTTP 200 (backend test confirms url starts https://checkout.stripe.com and session_id 'cs_live_'); /dashboard/settings shows stripe-connect-card, connect-stripe-button, integration-snippet-card and clicking connect fires POST /api/settings/stripe/connect -> 200 (backend test confirms mode='oauth', url starts https://connect.stripe.com/oauth/authorize with client_id=ca_Ur9Mzk7...); Offers page renders 5 toggles; Analytics loads; Public cancel wizard end-to-end for ext_1001 'Too expensive' -> 50% off offer -> Claim -> apply-offer 200 with simulated 'no Stripe account connected' message, success step shown. No 500s anywhere.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_billing.py",
+    "/app/backend/tests/test_settings.py",
+    "/app/backend/tests/test_churnguard.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/iteration4.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "billing_routes.create_checkout: correct raw stripe SDK usage, 14-day trial via subscription_data.trial_period_days, persists payment_transactions row, propagates org_id/plan_id in metadata for webhook sync. Good.",
+    "billing_routes.change_plan/cancel: correctly 400 when no stripe_subscription_id — demo/display-only orgs cannot mutate a real subscription. Matches spec.",
+    "settings_routes.stripe_connect: state token persisted in oauth_states with org_id; callback validates state and calls stripe.OAuth.token to exchange code — correct real Connect Standard OAuth flow. livemode carried through from token.",
+    "settings_routes.stripe_disconnect: attempts stripe.OAuth.deauthorize before clearing local state — correct order, and swallows deauthorize failure so local disconnect always succeeds.",
+    "dashboard_routes.create_offer: platform coupons no longer created at offer creation (stripe_coupon_id null); 402 enforcement present. Confirmed by regression tests.",
+    "session_routes.apply_offer: falls back to simulated message '[SIMULATED] ... no Stripe account connected' when org has no connected acct — verified live via wizard.",
+    "Minor: /api/billing/checkout wraps all stripe errors as 502 — consider distinguishing 4xx (invalid input) vs 5xx (Stripe outage) via stripe.error.InvalidRequestError. Low priority.",
+    "Minor: /api/settings/stripe/connect/callback uses RedirectResponse to FRONTEND_URL; if FRONTEND_URL env is empty the redirect becomes a bare path — ensure it's set in production."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_billing.py",
+    "/app/backend/tests/test_settings.py",
+    "/app/backend/tests/test_churnguard.py",
+    "/app/backend/tests/conftest.py"
+  ],
+  "success_rate": {"backend": "100% (32/32 executed, 1 intentional skip)", "frontend": "100%"},
+  "test_credentials": "demo@churnguard.io / ChurnGuard2026! ; api_key cg_live_demo_9f3a7c21b8e4",
+  "seed_data_creation": "None. Offer-limit test fills then cleans up its own offers in finally.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "conftest.py loads REACT_APP_BACKEND_URL from /app/frontend/.env if not set — required because pytest environment is not populated with the frontend .env by default. The offer over-limit 402 test is co-located in test_churnguard.py::TestOffers so it shares an xdist loadscope worker with test_offer_crud_lifecycle (avoids race on shared demo org offer count). Do NOT complete any real Stripe checkout or OAuth. Live keys are configured; each checkout session creation is safe (no charge until user submits card). Demo org has NO real stripe_subscription_id, so change-plan/cancel returning 400 is CORRECT behavior. Frontend .json() reads on checkout/connect responses may fail because the app immediately triggers redirect to stripe.com and clears the response body — use expect_response and inspect status only, or block navigation via page.route to buffer body.",
+  "rca of the issue": "N/A — no bugs found."
+}

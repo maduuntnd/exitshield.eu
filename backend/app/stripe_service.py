@@ -18,23 +18,24 @@ import stripe
 
 logger = logging.getLogger(__name__)
 
-stripe.api_key = os.environ.get("STRIPE_API_KEY", "")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", os.environ.get("STRIPE_API_KEY", ""))
 
 
 def _live_key() -> bool:
-    key = os.environ.get("STRIPE_API_KEY", "")
+    key = os.environ.get("STRIPE_SECRET_KEY", os.environ.get("STRIPE_API_KEY", ""))
     return key.startswith("sk_") and key != "sk_test_emergent"
 
 
-def create_coupon(percent_off: int, name: str) -> dict:
-    """Create a reusable Stripe coupon. Falls back to a simulated coupon id."""
-    if _live_key():
+def create_coupon(percent_off: int, name: str, stripe_account: str = None) -> dict:
+    """Create a coupon on the vendor's connected account. Falls back to a simulated id."""
+    if _live_key() and stripe_account:
         try:
             coupon = stripe.Coupon.create(
                 percent_off=percent_off,
                 duration="repeating",
                 duration_in_months=2,
                 name=name,
+                stripe_account=stripe_account,
             )
             return {"stripe_coupon_id": coupon.id, "simulated": False}
         except Exception as e:

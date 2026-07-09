@@ -59,8 +59,8 @@ export default function Billing() {
       attempts += 1;
       try {
         const { data } = await api.get(`/billing/checkout/status/${sessionId}`);
-        if (data.payment_status === "paid") {
-          toast.success("Payment method added — you're all set!");
+        if (data.payment_status === "paid" || data.payment_status === "no_payment_required" || data.status === "complete") {
+          toast.success("Subscription active — your 14-day trial has started!");
           setPolling(false);
           setParams({}, { replace: true });
           await load();
@@ -86,7 +86,16 @@ export default function Billing() {
 
   const selectPlan = async (plan) => {
     setBusyPlan(plan.id);
+    const s = state.subscription;
+    const hasActiveSub = s.stripe_subscription_id && ["trialing", "active", "past_due"].includes(s.status);
     try {
+      if (hasActiveSub) {
+        await api.post("/billing/change-plan", { plan_id: plan.id });
+        toast.success(`Switched to ${plan.name}`);
+        await load();
+        setBusyPlan(null);
+        return;
+      }
       const { data } = await api.post("/billing/checkout", {
         plan_id: plan.id,
         origin_url: window.location.origin,
@@ -206,17 +215,16 @@ export default function Billing() {
                 disabled={busyPlan === p.id}
                 ctaLabel={
                   busyPlan === p.id
-                    ? "Redirecting…"
+                    ? "Working…"
                     : sub.payment_method_on_file
                     ? (p.price > state.plan.price ? "Upgrade" : "Switch")
-                    : "Add payment & activate"
+                    : "Start 14-day trial"
                 }
               />
             ))}
           </div>
           <p className="mt-4 text-xs text-slate-500">
-            Secure checkout via Stripe. Note: with the demo test key, recurring auto-charge is simulated in-app —
-            connect a live Stripe key for real recurring billing.
+            Secure recurring billing by Stripe. Your card is charged automatically when the 14-day trial ends — cancel anytime before then.
           </p>
         </div>
       </div>

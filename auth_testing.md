@@ -32,3 +32,10 @@ print('session_token: '+st);
 "
 Set cookie session_token (secure, sameSite None) then visit /dashboard.
 NOTE: Google test users have no org_id, so dashboard KPI calls 400. Prefer JWT admin (demo@churnguard.io) for gated-page tests since it owns the seeded org with data.
+
+## Billing & Stripe (LIVE mode) — updated
+- Billing now uses the REAL Stripe SDK with LIVE keys. Vendor plans are real recurring subscriptions via Stripe Checkout (subscription mode, trial_period_days=14).
+- Endpoints: /api/billing/plans, /api/billing/subscription, /api/billing/checkout (returns cs_live_ url), /api/billing/checkout/status/{id}, /api/billing/change-plan, /api/billing/cancel, /api/stripe/webhook (sig-verified, idempotent).
+- Connect (real OAuth): POST /api/settings/stripe/connect -> {mode:'oauth', url}; GET /api/settings/stripe/connect/callback; POST /api/settings/stripe/disconnect.
+- DO NOT complete a real checkout (collects a real card) or complete Connect OAuth in automated tests. Only verify session/url creation and non-erroring endpoints.
+- Demo org is seeded trialing (display only, no real Stripe subscription) so it is never charged.

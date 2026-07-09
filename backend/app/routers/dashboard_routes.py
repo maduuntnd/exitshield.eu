@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from ..db import db
 from ..models import OfferCreate, OfferUpdate, FlowUpdate, gen_id, now_iso
 from ..auth import get_current_user
-from ..stripe_service import create_coupon
 from ..billing import get_state
 
 router = APIRouter(prefix="/api", tags=["dashboard"])
@@ -90,14 +89,12 @@ async def create_offer(body: OfferCreate, user: dict = Depends(get_current_user)
                             detail=f"You've reached the {state['plan']['name']} plan limit of "
                                    f"{state['limits']['offers']} offers. Upgrade to add more.")
     doc = body.model_dump()
-    stripe_coupon_id = None
-    if body.type == "discount" and body.discount_percent:
-        coupon = create_coupon(body.discount_percent, body.value)
-        stripe_coupon_id = coupon["stripe_coupon_id"]
+    # Coupons are created on the vendor's connected Stripe account at apply-time
+    # (see session_routes) so we don't pollute the platform account.
     doc.update({
         "id": gen_id("offer_"),
         "org_id": org_id,
-        "stripe_coupon_id": stripe_coupon_id,
+        "stripe_coupon_id": None,
         "claim_count": 0,
         "created_at": now_iso(),
     })
@@ -113,9 +110,6 @@ async def update_offer(offer_id: str, body: OfferUpdate, user: dict = Depends(ge
     if not offer:
         raise HTTPException(status_code=404, detail="Offer not found")
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
-    if updates.get("discount_percent") and updates.get("type", offer["type"]) == "discount":
-        coupon = create_coupon(updates["discount_percent"], updates.get("value", offer["value"]))
-        updates["stripe_coupon_id"] = coupon["stripe_coupon_id"]
     await db.retention_offers.update_one({"id": offer_id}, {"$set": updates})
     return await db.retention_offers.find_one({"id": offer_id}, {"_id": 0})
 

@@ -116,7 +116,8 @@ class TestOffers:
         oid = created["id"]
         assert created["value"] == "TEST 25% off"
         assert created["active"] is True
-        assert created["stripe_coupon_id"]  # simulated
+        # New behavior: offers no longer create platform coupons at creation time
+        assert created.get("stripe_coupon_id") in (None, "")
 
         # verify in list
         lst = admin_session.get(f"{API}/offers").json()
@@ -137,6 +138,33 @@ class TestOffers:
         assert r.status_code == 200
         lst = admin_session.get(f"{API}/offers").json()
         assert not any(o["id"] == oid for o in lst)
+
+
+    def test_offer_over_limit_returns_402(self, admin_session):
+        """Fill offers up to plan limit then verify 402. Co-located here so it shares
+        the module's xdist worker (loadscope) with test_offer_crud_lifecycle to avoid
+        cross-worker races on the shared demo org offer count."""
+        state = admin_session.get(f"{API}/billing/subscription").json()
+        limit = state["limits"]["offers"]
+        current = state["usage"]["offers"]
+        created = []
+        try:
+            while current < limit:
+                p = {"type": "discount", "value": f"TEST FILL {current}",
+                     "description": "fill", "trigger_reason": "Too expensive",
+                     "discount_percent": 5, "active": True}
+                r = admin_session.post(f"{API}/offers", json=p)
+                assert r.status_code == 200, r.text
+                created.append(r.json()["id"])
+                current += 1
+            p = {"type": "discount", "value": "TEST OVERLIMIT",
+                 "description": "should fail", "trigger_reason": "Too expensive",
+                 "discount_percent": 5, "active": True}
+            r = admin_session.post(f"{API}/offers", json=p)
+            assert r.status_code == 402, f"expected 402 got {r.status_code} {r.text}"
+        finally:
+            for oid in created:
+                admin_session.delete(f"{API}/offers/{oid}")
 
 
 # ---------- Public Cancellation Session ----------

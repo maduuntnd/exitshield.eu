@@ -22,7 +22,11 @@ function BillingBanner() {
   if (s === "active" && !state.subscription.cancel_at_period_end && !state.soft_limited) return null;
 
   let cfg = null;
-  if (s === "trialing")
+  if (state.needs_subscription)
+    cfg = { icon: Clock, tone: "emerald",
+      text: "Start your 14-day free trial to activate your save flows. No charge today.",
+      cta: "Start trial" };
+  else if (s === "trialing")
     cfg = { icon: Clock, tone: "emerald",
       text: `${state.trial_days_left} day${state.trial_days_left === 1 ? "" : "s"} left in your free trial. Add a payment method to keep your save flows running.`,
       cta: "Add payment" };

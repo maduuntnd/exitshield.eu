@@ -1,16 +1,31 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plug, Check, Copy, Loader2, ShieldCheck, AlertTriangle, Link2Off } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function Settings() {
+  const [params, setParams] = useSearchParams();
   const [info, setInfo] = useState(null);
   const [connecting, setConnecting] = useState(false);
   const [copied, setCopied] = useState(null);
 
   const load = () => api.get("/settings/integration").then((r) => setInfo(r.data)).catch(() => {});
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    const s = params.get("stripe");
+    if (s === "connected") {
+      toast.success("Stripe connected successfully");
+      setParams({}, { replace: true });
+      load();
+    } else if (s === "error") {
+      toast.error("Stripe connection failed. Please try again.");
+      setParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const connect = async () => {
     setConnecting(true);
@@ -93,7 +108,7 @@ export default function Settings() {
                 {info.stripe_connect.account_id}
               </code>
               {info.stripe_connect.simulated && (
-                <span className="text-xs text-amber-400/80">Test connection (simulated) — plug in a live Stripe platform key for real Connect.</span>
+                <span className="text-xs text-amber-400/80">Test connection — reconnect for live mode.</span>
               )}
               <button onClick={disconnect} data-testid="disconnect-stripe-button"
                 className="sm:ml-auto inline-flex items-center gap-2 rounded-lg border border-white/15 px-4 py-2.5 text-sm text-slate-300 hover:text-red-400 hover:bg-white/5 transition-colors">
@@ -109,7 +124,7 @@ export default function Settings() {
               </button>
               {!info.live_platform && (
                 <p className="mt-3 text-xs text-slate-500">
-                  Demo mode: this creates a simulated test connection so you can see the full flow. Real Stripe Connect activates once a live platform key is configured.
+                  Stripe Connect isn't configured yet. Add your Connect client id to enable vendor authorization.
                 </p>
               )}
             </div>

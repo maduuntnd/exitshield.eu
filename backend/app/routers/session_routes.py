@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from ..db import db
 from ..models import (SessionInitRequest, SessionRespondRequest, ApplyOfferRequest,
                       gen_id, now_iso)
-from ..stripe_service import apply_discount, pause_subscription, cancel_at_period_end
+from ..stripe_service import apply_discount, pause_subscription, cancel_at_period_end, create_coupon
 
 router = APIRouter(prefix="/api/v1", tags=["public-session"])
 
@@ -127,7 +127,11 @@ async def apply_offer(body: ApplyOfferRequest):
             {"id": body.offer_id or session.get("offer_id")}, {"_id": 0})
         if not offer:
             raise HTTPException(status_code=400, detail="Offer not found")
-        coupon_id = offer.get("stripe_coupon_id") or "sim_coupon"
+        if acct and offer.get("discount_percent"):
+            coupon = create_coupon(offer["discount_percent"], offer["value"], acct)
+            coupon_id = coupon["stripe_coupon_id"]
+        else:
+            coupon_id = offer.get("stripe_coupon_id") or "sim_coupon"
         result = apply_discount(sub_id, coupon_id, acct)
         final_outcome = "retained_discount"
         await db.retention_offers.update_one({"id": offer["id"]}, {"$inc": {"claim_count": 1}})
