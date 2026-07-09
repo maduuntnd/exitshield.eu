@@ -42,3 +42,12 @@ organizations, customers, cancellation_flows, retention_offers, cancel_sessions,
 1. Flow builder UI for custom survey questions.
 2. Vendor settings page (return_url, branding).
 3. Optional: wire a real Stripe test key for live mutations.
+
+## Monetization / Vendor Billing (added 2026-07-09)
+- Three flat monthly tiers: Starter $49 (250 sessions/mo, 3 offers, 1 seat), Growth $99 (1,500 sessions, 15 offers, badge removal, advanced analytics, 3 seats), Scale $149 (10k sessions, ~unlimited offers, custom branding, API, 10 seats).
+- 14-day free trial (default Growth) auto-created for every org; in-app lifecycle engine (`app/billing.py evaluate_lifecycle`) handles trialing → active (auto-charge) → past_due (grace 2d) → suspended, plus renewals and cancel_at_period_end.
+- Soft-limit (nudge banner) then hard-limit (offer creation blocked, HTTP 402) after grace / on suspension.
+- Real Emergent Stripe checkout (`emergentintegrations`) for the pay/add-payment-method step (creates `payment_transactions`, status polling + idempotent webhook `/api/webhook/stripe`).
+- Frontend: public `/pricing`, dashboard `/dashboard/billing` (current plan, trial countdown, usage bars, plan upgrade/downgrade, cancel), dashboard-wide BillingBanner.
+- SIMULATED: recurring auto-charge & renewals + saved cards (sk_test_emergent proxy can't do subscription mode). Swap a real Stripe key + subscription-mode prices to go fully live.
+- Tests: 28/28 backend (test_churnguard.py + test_billing.py), frontend 100%.
