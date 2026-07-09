@@ -32,6 +32,7 @@ export default function Landing() {
             <ShieldCheck className="text-emerald-400" /> ChurnGuard
           </div>
           <div className="flex items-center gap-3">
+            <Link to="/pricing" data-testid="nav-pricing-link" className="text-sm text-slate-300 hover:text-white px-4 py-2 transition-colors">Pricing</Link>
             <Link to="/login" data-testid="nav-login-link" className="text-sm text-slate-300 hover:text-white px-4 py-2 transition-colors">Sign in</Link>
             <Link to="/register" data-testid="nav-register-link"
               className="text-sm font-semibold rounded-full bg-emerald-500 text-[#0b0f19] px-5 py-2.5 hover:bg-emerald-400 transition-colors">

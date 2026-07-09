@@ -5,6 +5,7 @@ from ..db import db
 from ..models import OfferCreate, OfferUpdate, FlowUpdate, gen_id, now_iso
 from ..auth import get_current_user
 from ..stripe_service import create_coupon
+from ..billing import get_state
 
 router = APIRouter(prefix="/api", tags=["dashboard"])
 
@@ -79,6 +80,15 @@ async def list_offers(user: dict = Depends(get_current_user)):
 @router.post("/offers")
 async def create_offer(body: OfferCreate, user: dict = Depends(get_current_user)):
     org_id = await _require_org(user)
+    org = await db.organizations.find_one({"id": org_id}, {"_id": 0})
+    state = await get_state(org)
+    if state["hard_limited"]:
+        raise HTTPException(status_code=402,
+                            detail="Your account is suspended. Please update billing to continue.")
+    if state["usage"]["offers"] >= state["limits"]["offers"]:
+        raise HTTPException(status_code=402,
+                            detail=f"You've reached the {state['plan']['name']} plan limit of "
+                                   f"{state['limits']['offers']} offers. Upgrade to add more.")
     doc = body.model_dump()
     stripe_coupon_id = None
     if body.type == "discount" and body.discount_percent:

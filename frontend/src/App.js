@@ -10,6 +10,8 @@ import AuthCallback from "@/pages/AuthCallback";
 import Dashboard from "@/pages/Dashboard";
 import Offers from "@/pages/Offers";
 import Analytics from "@/pages/Analytics";
+import Billing from "@/pages/Billing";
+import Pricing from "@/pages/Pricing";
 import CancelFlow from "@/pages/CancelFlow";
 
 function ProtectedRoute({ children }) {
@@ -36,6 +38,7 @@ function AppRouter() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/pricing" element={<Pricing />} />
       <Route path="/cancel" element={<CancelFlow />} />
       <Route
         path="/dashboard"
@@ -58,6 +61,14 @@ function AppRouter() {
         element={
           <ProtectedRoute>
             <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/billing"
+        element={
+          <ProtectedRoute>
+            <Billing />
           </ProtectedRoute>
         }
       />

@@ -14,6 +14,7 @@ async def create_indexes():
     await db.organizations.create_index("api_key", unique=True)
     await db.customers.create_index("id", unique=True)
     await db.cancel_sessions.create_index("token", unique=True)
+    await db.payment_transactions.create_index("session_id")
 
 
 def close_client():

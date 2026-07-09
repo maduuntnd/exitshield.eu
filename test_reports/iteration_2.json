@@ -1,0 +1,33 @@
+{
+  "summary": "Iteration 2 covers the newly added vendor billing feature (Starter/Growth/Scale) on top of the ChurnGuard MVP. Backend: 28/28 pytest cases passing (16 regression + 12 new billing). New billing suite covers GET /billing/plans (public, 3 plans with correct prices $49/$99/$149 and offer_limits 3/15/100), GET /billing/subscription (demo org trialing on Growth, ~8 trial days, correct limits, soft/hard=false), POST /billing/checkout (real Stripe proxy session created + payment_transactions row inserted with payment_status='initiated'; invalid plan -> 400), GET /billing/checkout/status/{sid} (returns payment_status/status without error, 404 for unknown sid), POST /billing/change-plan (verified via GET), POST /billing/cancel (cancel_at_period_end=true verified via GET), and OFFER LIMIT 402 enforcement (switched org to Starter with limit 3 while org has 4 seeded offers => POST /api/offers correctly returns 402 with 'limit'/'upgrade' message). Frontend (Playwright): /pricing renders 3 plan cards with $49/$99/$149 and 'Start 14-day trial' CTAs; dashboard shows billing-banner ('8 days left in your free trial') with banner-billing-cta; nav-billing routes to /dashboard/billing; billing page shows current-plan-card + trial-countdown ('8 days left in trial') + usage-sessions + usage-offers + 3 plan cards + cancel-subscription-button; clicking select-plan-scale fires POST /api/billing/checkout which returns real Stripe url + session_id (redirect initiates as expected — real payment intentionally NOT completed).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_churnguard.py",
+    "/app/backend/tests/test_billing.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/billing_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "billing.py evaluate_lifecycle correctly persists state transitions (trialing->past_due/active, past_due->suspended, active renewal / cancel_at_period_end -> canceled) — sound state machine.",
+    "billing_routes.change_plan does NOT reset trial_ends_at or status: an org in 'trialing' remains trialing after change-plan (desired). Verified behavior.",
+    "billing_routes.checkout: server-side price lookup from PLANS dict (client-supplied amount not trusted) — good security posture.",
+    "billing_routes.cancel toggles cancel_at_period_end but no way in UI/API to un-cancel other than change-plan overwriting cancel_at_period_end=False — acceptable but consider explicit 'resume' endpoint.",
+    "dashboard_routes.create_offer 402 correctly triggered when usage >= limit; message includes plan name and limit — clear UX.",
+    "PROXY LIMITATION MOCKED: recurring auto-charge & renewals are simulated in-app (evaluate_lifecycle) because sk_test_emergent cannot create real Stripe subscriptions — this is properly documented in billing.py docstring.",
+    "webhook /api/webhook/stripe is idempotent (checks txn.processed) — good."
+  ],
+  "updated_files": ["/app/backend/tests/test_billing.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "demo@churnguard.io / ChurnGuard2026! ; public api_key cg_live_demo_9f3a7c21b8e4",
+  "seed_data_creation": "No new seed data. Tests temporarily switch demo org between growth/starter/growth to verify 402 enforcement and clean up transient offers.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Full backend regression suite is now split across /app/backend/tests/test_churnguard.py (auth/dashboard/offers/public session) and /app/backend/tests/test_billing.py (billing). Run: pytest /app/backend/tests/ -v. Billing tests temporarily flip org plan starter<->growth; they always restore Growth at teardown. Recurring Stripe auto-charge is simulated (in-app lifecycle engine) — do NOT expect real subscription mode; checkout sessions remain unpaid in automated tests, which is expected. Stripe checkout uses sk_test_emergent proxy via emergentintegrations.",
+  "rca of the issue": "N/A — no bugs found; every billing feature and regression flow is working end-to-end."
+}
