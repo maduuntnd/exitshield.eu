@@ -65,3 +65,13 @@ organizations, customers, cancellation_flows, retention_offers, cancel_sessions,
 1. Live Stripe platform key + Connect client id → real "Connect with Stripe" OAuth.
 2. Live subscription-mode prices for real recurring vendor billing.
 3. HMAC-signed cancel URLs so user_id/subscription_id can't be forged.
+
+## LIVE Stripe (added 2026-07-09) — BETA ready
+- Switched billing + Connect from proxy/simulation to the vendor's REAL LIVE Stripe (raw stripe SDK).
+- Vendor plans are real recurring subscriptions via Checkout (subscription mode, trial_period_days=14, card required, auto-charge after). Real price IDs in env (STRIPE_PRICE_STARTER/GROWTH/SCALE).
+- Real signature-verified, idempotent webhook at /api/stripe/webhook (checkout.session.completed, invoice.paid, customer.subscription.updated/deleted/trial_will_end, invoice.payment_failed) syncs org.subscription status.
+- Real Stripe Connect (Standard OAuth): /api/settings/stripe/connect -> connect.stripe.com; callback exchanges code -> stores acct_ id; disconnect deauthorizes. apply-offer coupon/pause/cancel run on the vendor's connected account via stripe_account.
+- Retention coupons created on the vendor's connected account at apply-time (no platform pollution).
+- Tests: 32/32 backend + frontend 100% (tests migrated to live-Stripe behavior; no real payments completed).
+- Env to update on production deploy: FRONTEND_URL, STRIPE_CONNECT_REDIRECT_URI, Stripe webhook endpoint + OAuth redirect URI (swap preview URL → prod domain).
+- ⚠️ Demo account (demo@churnguard.io) ships with public creds + auto-refreshing trial; remove/lock before public BETA.
