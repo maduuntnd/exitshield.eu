@@ -24,6 +24,12 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return;
     }
+    // Skip session check on the public cancellation portal (no auth needed).
+    if (window.location.pathname.startsWith("/cancel")) {
+      setUser(false);
+      setLoading(false);
+      return;
+    }
     checkAuth();
   }, [checkAuth]);
 
