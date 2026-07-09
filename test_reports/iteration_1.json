@@ -1,0 +1,33 @@
+{
+  "summary": "First end-to-end test run for ChurnGuard MVP. Backend: 16/16 pytest cases passing (health, auth login/register/logout/me, dashboard KPIs, organization, offers CRUD, analytics sessions, public cancel session init/respond/apply-offer for discount, pause, cancel, invalid api_key, invalid action). Frontend: All critical flows verified via Playwright — vendor login -> dashboard with KPI cards + MRR trend chart + reasons chart, offers manager (list seeded 4 offers, create modal, edit, toggle active, delete), analytics sessions table with all/saved/canceled filters, logout redirects to /login, and public cancellation wizard end-to-end for discount accept (50% off), pause accept, and decline -> goodbye states, plus invalid api_key error state. Stripe subscription mutations correctly return simulated:true with SIMULATED messages as designed for sk_test_emergent proxy.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Public /cancel error state", "issues": ["When AuthContext runs on public cancel page it hits /api/auth/me and logs 401 in console (harmless but noisy)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_churnguard.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Optional: guard AuthContext /api/auth/me fetch so it does not fire on public routes (/cancel, /login) to remove harmless 401 console noise."
+  ],
+  "critical_code_review_comments": [
+    "stripe_service.py cleanly labels SIMULATION fallback (simulated:true) as intended for sk_test_emergent proxy — good.",
+    "session_routes.session_init auto-creates ephemeral customer when external_user_id is unknown — acceptable but consider stronger validation for production.",
+    "dashboard_routes.update_offer: when `active` is set to False via PATCH, the `{k: v for k, v in ... if v is not None}` filter still lets False through only because False is not None — verified correct.",
+    "auth_routes lockout stored per IP+email — reasonable; note MAX_ATTEMPTS=5 with 15-min lockout could interfere with automated retest suites if tests fail repeatedly.",
+    "CORS_ORIGINS=\"*\" combined with credentials cookies (samesite=none) — works because same-origin proxy is used; if ever split hosts, explicit origin allowlist will be required."
+  ],
+  "updated_files": ["/app/backend/tests/test_churnguard.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "demo@churnguard.io / ChurnGuard2026! ; public api_key cg_live_demo_9f3a7c21b8e4",
+  "seed_data_creation": "Used existing seeded data (Acme Analytics org, 4 offers, 5 customers ext_1001-1005, 40 historical sessions). Playwright test created & deleted one transient 'UI TEST' offer.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "backend_test.py at /app/backend/tests/test_churnguard.py is the regression suite (run: pytest backend/tests/ -v). It covers auth, dashboard KPIs, offers CRUD, and public session end-to-end (discount/pause/cancel) with simulated Stripe assertions. Test emails must use RFC-valid domains (avoid .test/.example TLDs that pydantic EmailStr rejects — use @example.com).",
+  "rca of the issue": "N/A — no bugs found; all specified features are working."
+}
