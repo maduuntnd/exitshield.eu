@@ -8,9 +8,9 @@
   
   An automated, high-converting customer retention portal designed to plug directly into B2B SaaS applications to recover MRR and turn leaving customers into second chances.
 
-  [![License: MIT](https://img.shields.io/badge/License-MIT-10B981.svg)](LICENSE)
+  [![License](https://img.shields.io/badge/License-MIT-10B981.svg)](LICENSE)
   [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-  [![Built with Emergent](https://img.shields.io/badge/Built%20with-Emergent.sh-000000.svg)](https://emergent.sh)
+  [![Built with AI](https://img.shields.io/badge/Built%20with-Gemini-000000.svg)](https://gemini.google.com)
 
   [Live Demo](https://churnguard.me) • [Documentation](#-getting-started) • [Report Bug](https://github.com/your-username/churnguard/issues)
 
