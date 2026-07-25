@@ -10,7 +10,7 @@
 
   [![License](https://img.shields.io/badge/Under-Licence-10B981.svg)](LICENSE)
   [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-  [![Built with AI](https://img.shields.io/badge/Built%20with-Gemini-000000.svg)](https://gemini.google.com)
+  [![Built with AI](https://img.shields.io/badge/Built%20with-3.6-Flash-Extended-000000.svg)](https://gemini.google.com)
 
   [Live Demo](https://churnguard.me) • [Documentation](#-getting-started) • [Report Bug](https://github.com/your-username/churnguard/issues)
 
