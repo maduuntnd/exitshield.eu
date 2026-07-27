@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./assets/banner.png" alt="ChurnGuard Logo" width="120" />
+  <img src="./assets/banner.png" alt="ChurnGuard Logo" width="400" />
 
   # 🛡️ ChurnGuard
 
