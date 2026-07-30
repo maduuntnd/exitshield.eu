@@ -1,8 +1,8 @@
 <div align="center">
 
-  <img src="./assets/banner.png" alt="ChurnGuard Logo" width="900" />
+  <img src="./assets/blank.png" alt="ExitShield Logo" width="900" />
 
-  # 🛡️ ChurnGuard
+  # 🛡️ ExitShield
 
   **Stop the churn before the cancel.**
   
@@ -13,7 +13,7 @@
   [![Built with: Gemini (3.6 Flash Extended)](https://www.freewebtools.com/api/badge/Built%20with-Gemini%20(3.6%20Flash%20Extended)-007ec6.svg?style=flat&labelColor=555)](https://gemini.google.com/)
   [![made with: ❤️](https://www.freewebtools.com/api/badge/made%20with-%E2%9D%A4%EF%B8%8F-700000.svg?style=flat&labelColor=555)](https://gemini.google.com/)
   
-  [Live Demo](https://churnguard.me) • [Documentation](#-getting-started) • [Report Bug](https://github.com/your-username/churnguard/issues)
+  [Live Demo](https://demo.exitshield.eu) • [Documentation](#-getting-started) • [Report Bug](https://github.com/maduuntnd/exitshield/issues)
 
 </div>
 
@@ -21,7 +21,7 @@
 
 ## 📌 Overview
 
-**ChurnGuard** is a plug-and-play customer retention infrastructure built for modern SaaS companies. Instead of allowing customers to quietly hit a dead-end "Cancel Subscription" button, ChurnGuard intercepts the cancellation flow with a dynamic, survey-driven retention portal powered by Stripe.
+**ExitShield** is a plug-and-play customer retention infrastructure built for modern SaaS companies. Instead of allowing customers to quietly hit a dead-end "Cancel Subscription" button, ChurnGuard intercepts the cancellation flow with a dynamic, survey-driven retention portal powered by Stripe.
 
 By delivering personalized incentives (discounts, subscription pauses, or direct founder calls) at the exact moment of exit, ChurnGuard recovers up to **30%+** of churning revenue completely on autopilot.
 
@@ -41,7 +41,7 @@ By delivering personalized incentives (discounts, subscription pauses, or direct
 
 ```mermaid
 graph LR
-    A[Customer Clicks Cancel] --> B[Redirect to ChurnGuard]
+    A[Customer Clicks Cancel] --> B[Redirect to ExitShield]
     B --> C[Exit Survey Questionnaire]
     C --> D[Dynamic Retention Offer]
     D -->|Accepts Offer| E[Stripe Coupon / Pause Applied]
