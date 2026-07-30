@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./assets/blank.png" alt="ExitShield Logo" width="900" />
+  <img src="./assets/logo.png" alt="ExitShield Logo" width="900" />
 
   # 🛡️ ExitShield
 
