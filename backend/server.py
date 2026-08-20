@@ -1,65 +1,94 @@
-from dotenv import load_dotenv
-from pathlib import Path
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / ".env")
-
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import os
-import logging
-from fastapi import FastAPI, APIRouter
-from starlette.middleware.cors import CORSMiddleware
+import sys
 
-from app.db import create_indexes, close_client
-from app.seed import seed
-from app.routers import auth_routes, dashboard_routes, session_routes
-from app.routers import billing_routes
-from app.routers import settings_routes
+# Import routers
+from app.routers import auth_routes, billing_routes, dashboard_routes, session_routes, settings_routes
+from app.stripe_service import StripeService
+from app.db import init_db
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger("churnguard")
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
 
-app = FastAPI(title="ChurnGuard API")
+# Required environment variables
+REQUIRED_ENV_VARS = [
+    "DATABASE_URL",
+    "SECRET_KEY",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "FRONTEND_URL",
+    "BACKEND_URL",
+]
 
-health_router = APIRouter(prefix="/api")
+def validate_environment():
+    """Validate that all required environment variables are set."""
+    missing_vars = []
+    for var in REQUIRED_ENV_VARS:
+        value = os.getenv(var)
+        if not value:
+            missing_vars.append(var)
+    
+    if missing_vars:
+        error_msg = (
+            f"Missing required environment variables: {', '.join(missing_vars)}\n"
+            f"Please set these variables in your .env file or environment.\n"
+            f"See .env.example for reference."
+        )
+        print(f"ERROR: {error_msg}", file=sys.stderr)
+        sys.exit(1)
+    
+    print("✓ All required environment variables are set")
 
 
-@health_router.get("/")
-async def root():
-    return {"service": "ChurnGuard", "status": "ok"}
+# Validate environment on startup
+validate_environment()
+
+# Initialize Stripe service after validation
+stripe_service = StripeService()
 
 
-@health_router.get("/health")
-async def health():
-    return {"status": "healthy"}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    init_db()
+    print("✓ Database initialized")
+    yield
+    # Shutdown
+    print("✓ Application shutdown")
 
 
-app.include_router(health_router)
-app.include_router(auth_routes.router)
-app.include_router(dashboard_routes.router)
-app.include_router(session_routes.router)
-app.include_router(billing_routes.router)
-app.include_router(settings_routes.router)
+app = FastAPI(
+    title="ExitShield API",
+    description="B2B SaaS Retention System API",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:3000")],
     allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-@app.on_event("startup")
-async def on_startup():
-    try:
-        await create_indexes()
-        await seed()
-        logger.info("ChurnGuard startup complete: indexes + seed done.")
-    except Exception as e:
-        logger.exception("Startup error: %s", e)
+# Include routers
+app.include_router(auth_routes.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(billing_routes.router, prefix="/api/billing", tags=["Billing"])
+app.include_router(dashboard_routes.router, prefix="/api/dashboard", tags=["Dashboard"])
+app.include_router(session_routes.router, prefix="/api/session", tags=["Session"])
+app.include_router(settings_routes.router, prefix="/api/settings", tags=["Settings"])
 
 
-@app.on_event("shutdown")
-async def on_shutdown():
-    close_client()
+@app.get("/")
+async def root():
+    return {"message": "ExitShield API is running", "version": "1.0.0"}
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "exitshield-api"}
